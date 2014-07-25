@@ -2,6 +2,7 @@
 #include <stdlib.h>
 int partion(int *arr,int p,int q)
 {
+
 	int j;
 	int mid=arr[q];
 	j=q-1;
