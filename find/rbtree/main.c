@@ -1,5 +1,5 @@
 #include "rbtree.h"
-int main()
+int main(int argc,char *argv[])
 {
 	char word[20];
 	init_rbtree();

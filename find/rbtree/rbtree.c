@@ -20,7 +20,7 @@ rbnode *insert_node(char *word)
 	{
 		if(strcmp(c->word,word) == 0)
 		{
-			c->word++;
+			c->count++;
 			return c;
 		}
 		else if(strcmp(c->word,word) <0)
@@ -41,6 +41,7 @@ rbnode *insert_node(char *word)
 	new_node->parent = p;
 	new_node->left = NIL;
 	new_node->right = NIL;
+	new_node->count = 1;
 	if(p == NIL)
 	{
 		HEADER=new_node;
@@ -384,12 +385,13 @@ void show_rbtree(rbnode *h)
 {
 	if(h == NIL)
 		return;
-	printf("%s\t%s\t%s\t%s\t%s\n"
+	printf("%s\t%s\t%s\t%s\t%s\t%d\n"
 			,(h == NIL || h == NULL) ? "":h->word
 			,(h->left == NIL || h->left == NULL) ? NULL:h->left->word
 			,(h->right == NIL || h->right == NULL) ? NULL:h->right->word
 			,(h->parent == NIL || h->parent == NULL) ? NULL:h->parent->word
 			,h->color ? "B":"R"
+			,h->count
 			);
 	show_rbtree(h->left);
 	show_rbtree(h->right);
