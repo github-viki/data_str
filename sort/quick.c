@@ -1,41 +1,42 @@
 #include <stdio.h>
 #include <stdlib.h>
-int partion(int *arr,int p,int q)
+int partion(int *p,int low,int high)
 {
-	int j;
-	int mid=arr[q];
-	j=q-1;
-	while(p<q&&j>=p)
+	while(low < high)
 	{
-		if(arr[p]>mid)
+		p[0] = p[low];
+		while(low < high && p[high] >= p[0])
 		{
-			int tmp=0;
-			tmp=arr[p];
-			arr[p]=arr[j];
-			arr[j]=tmp;
-			j--;
+			high--;
+		}	
+		p[low] = p[high];
+		while(low < high && p[low] <= p[0])
+		{
+			low++;
 		}
-		else
-			p++;
+		p[high] = p[low];
+		//the last
+		p[low] = p[0];
 	}
-	arr[p+1]=mid;
-	return p;
+		return low;
 }
-int quicksort(int *arr,int p,int r)
+int quicksort(int *p,int low,int high)
 {
-	if(p>=r)
-		return 1;
-	int q=0;
-	q=partion(arr,p,r);
-	quicksort(arr,p,q-1);
-	quicksort(arr,q+1,r);
-}
-int show(int *p,int len)
-{
-	int i=1;
-	for(i=1;i<=len;i++)
+	if(low < high)
 	{
-		printf("%d\n",p[i]);
+		int mid=partion(p,low,high);
+		quicksort(p,mid+1,high);
+		quicksort(p,low,mid-1);
+		return 1;
+	}
+	else
+		return 0;
+}
+void show_sort(int *p,int length)
+{
+	while(length>0)
+	{
+		printf("%5d\n",p[length--]);
 	}
 }
 int main()
@@ -46,5 +47,5 @@ int main()
 		i++;
 	int length = i-1;
 	quicksort(p,1,length);
-	show(p,length);
+	show_sort(p,length);
 }

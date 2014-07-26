@@ -15,15 +15,25 @@ int main()
 void insert_sort(int *p,int length)
 {
 	int i;
-	int j=0;
+	int low,high,mid;
 	for(i=2;i<=length;i++)
 	{
 		p[0] = p[i];
-		for(j=i;p[j-1]>p[0];j--)
+		high = i-1;
+		low = 1;
+		while(low <= high)
 		{
-			p[j] = p[j-1];
+			mid = (low + high)/2;
+			if(p[0] > p[mid]) low = mid+1;
+			else high = mid -1;
 		}
-		p[j] = p[0];
+		int j = i-1;
+		for(j;j >= low;j--) p[j+1] = p[j];
+		p[low] = p[0];
+		if(low == high+1)
+		{
+			printf("low == high+1\n");
+		}
 	}
 }
 void show_sort(int *p,int length)
