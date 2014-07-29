@@ -16,6 +16,7 @@ rbnode *insert_node(char *word)
 {
 	rbnode *p=HEADER;
 	rbnode *c=p;
+	//p保存的是即将插入节点的父节点
 	while(c != NIL)
 	{
 		if(strcmp(c->word,word) == 0)
@@ -53,7 +54,7 @@ rbnode *insert_node(char *word)
 	else
 		p->right=new_node;
 	//只有当new_node的父节点为红色的时候才需要调整。
-	if(new_node->parent->color == R)
+	if(p->color == R)
 		adjust_rb_tree(HEADER,new_node);
 //	show_rbtree(HEADER);
 //	printf("\n\n");
@@ -62,7 +63,9 @@ rbnode *insert_node(char *word)
 //adjust 
 //插入节点可能破坏的红黑性质有
 //1.根节点是黑色节点
-//2.红色节点的子节点不能是黑色节点。
+//2.红色节点的子节点不是黑色节点。
+//
+//
 //红黑树的性质
 //1.节点非黑即红
 //2.根节点为黑
@@ -118,11 +121,15 @@ void adjust_rb_tree(rbnode *h,rbnode *x)
 				}
 				
 				//CASE3
-				parent->color = B;
-				grandfather->color = R;
+				//交换父节点和祖父节点的颜色，
+				//然后右转
+				//
+				parent->color = B;//grandfather必然为黑色
+				grandfather->color = R;//父节点的颜色为红色
 				right_rotate(HEADER,grandfather);
 			}
 		}
+		//父节点是右子节点
 		else
 		{
 			uncle = grandfather->left;
@@ -134,6 +141,11 @@ void adjust_rb_tree(rbnode *h,rbnode *x)
 				grandfather->color = R;
 				son = grandfather;
 				parent = son->parent;
+				//递归到父节点
+				if(parent == NIL)
+				{
+					son->color = B;
+				}
 				grandfather = parent->parent;
 			}
 			//CASE2:叔父节点为黑色son为右孩子
@@ -194,7 +206,7 @@ rbnode* tree_succesor(rbnode *z)
 	//pz==NIL说明根节点z没有右子树
 	while(pz != NIL && z == pz->right)
 	{
-		z=pz;
+		z = pz;
 		pz=pz->parent;
 	}
 	return pz;
@@ -228,6 +240,7 @@ void del_node(rbnode *h,rbnode *z)
 	{
 		strcpy(z->word,y->word);
 	}
+	//只有删除黑色节点 才会出错
 	if(y->color == B)
 		adjust_del_rbnode(HEADER,x);
 	return;
@@ -238,7 +251,6 @@ void adjust_del_rbnode(rbnode *h,rbnode *x)
 	//删除时主要看x的兄弟节点w;
 	//必然有父节点和兄弟节点，如果没有父节点则为根节点，根据del_rbnode则不会跳到
 	//adjust_del_rbnode 函数中。
-	//如果有父节点则必然会有兄弟节点，否则违反性质5
 	//case1:w为红色，则通过变色，旋转将w变为黑色。
 	rbnode *w;
 	while(x != HEADER && x->color == B)
@@ -259,7 +271,9 @@ void adjust_del_rbnode(rbnode *h,rbnode *x)
 				left_rotate(HEADER,pw);
 				//左旋之后的变化。
 				//x = pw;//x->parent;
-				w = w->right;//w->right 必然为黑色
+				//此时 w为原来w的左孩子
+				
+				w = x->parent->right;//w->left 必然为黑色
 				//w = w->right;
 				//可以改写为，w = x->parent->right;
 			}
@@ -286,8 +300,9 @@ void adjust_del_rbnode(rbnode *h,rbnode *x)
 				//将wr设置为黑色，增加了一重黑色。
 				//则右旋减少一重黑色
 				pw=w->parent;
+				int tmp = w->color;
 				w->color = pw->color;
-				pw->color = B;
+				pw->color = tmp;
 				w->right->color = B;
 				left_rotate(HEADER,pw);
 				x = HEADER;
@@ -324,8 +339,9 @@ void adjust_del_rbnode(rbnode *h,rbnode *x)
 					w = pw->left;
 				}
 			//CASE4 wl 为红色 wr 任意色。
+				int tmp = w->color;
 				w->color = w->parent->color;
-				w->parent->color = B;
+				w->parent->color = tmp;
 				w->left->color = B;
 				right_rotate(HEADER,w->parent);
 				x = HEADER;

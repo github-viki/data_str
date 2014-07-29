@@ -112,11 +112,12 @@ void show_tree(treenode *h)
 	}
 	if(h->left != NULL)
 		show_tree(h->left);
-	printf("%s\t%s\t%s\t%s\t\n"
+	printf("%s\t%s\t%s\t%s\t%d\n"
 			,h->word
 			,h->left == NULL ? NULL:h->left->word
 			,h->right ==NULL ? NULL:h->right->word
-			,h->parent == NULL ? NULL:h->parent->word);
+			,h->parent == NULL ? NULL:h->parent->word
+			,h->count);
 	if(h->right != NULL)
 		show_tree(h->right);
 }
