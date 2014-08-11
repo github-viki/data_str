@@ -26,8 +26,14 @@ int main(int argc,char *argv[])
 	inet_pton(AF_INET,argv[1],(void *)&(ser_addr.sin_addr));
 	int sockfd;
 	sockfd = socket(AF_INET,SOCK_STREAM,0);
+	struct sockaddr_in clientaddr;
+	bzero(&clientaddr,sizeof(clientaddr));
+	clientaddr.sin_family = AF_INET;
+	clientaddr.sin_port = htons(atoi(argv[2]));
+	inet_pton(AF_INET,"127.0.0.1",(void *)&(clientaddr.sin_addr));
 	int on = 1;
 	setsockopt(sockfd,SOL_SOCKET,SO_REUSEADDR,&on,sizeof(on));
+	bind(sockfd,(struct sockaddr *)&clientaddr,sizeof(clientaddr));
 	if(connect(sockfd,(struct sockaddr *)&ser_addr,sizeof(ser_addr)) < 0)
 	{
 		perror("connect");
@@ -66,18 +72,10 @@ int main(int argc,char *argv[])
 			while(1)
 			{	
 			bzero(send_buf,1024);
-			if((n=read(0,send_buf,1024)) > 0)
+			if((n=read(0,send_buf,1023)) > 0)
 			{
-				int tmp_i = 0;
-				for(tmp_i;tmp_i < 6;tmp_i ++)
+				if(send(sockfd,send_buf,strlen(send_buf),0) < 0)
 				{
-				if(send(sockfd,send_buf,1024,0) < 0)
-				{
-					if(errno == EAGAIN)
-					{
-						sleep(3);
-						continue;
-					}
 					perror("send");
 					int sock_err;
 					int err_len=sizeof(int);
@@ -87,7 +85,6 @@ int main(int argc,char *argv[])
 				}
 				else
 				{
-				}
 				}
 			}
 			
@@ -115,7 +112,6 @@ int main(int argc,char *argv[])
 			{
 				bzero(recv_buf,1024);
 			ssize_t n;
-
 			n = recv(sockfd,recv_buf,1024,0);
 			if(n< 0)
 			{

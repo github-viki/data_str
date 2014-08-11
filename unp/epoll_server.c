@@ -58,7 +58,7 @@ int main(int argc,char *argv[])
 	printf("serv the SO_RECVBUF IS %d\n",length);
 	getsockopt(sockfd,SOL_SOCKET,SO_SNDBUF,&length,&size);
 	printf("serv the SO_sndVBUF IS %d\n",length);
-	length=10;
+	length=4096;
 	setsockopt(sockfd,SOL_SOCKET,SO_RCVBUF,&length,size);
 	listen(sockfd,10);
 	while(1)
@@ -79,12 +79,20 @@ int main(int argc,char *argv[])
 					 * and the socket must be nonblock;*/
 
 				int connfd;
-				connfd = accept(sockfd,0,0);
+				struct sockaddr_in clientaddr;
+				bzero(&clientaddr,sizeof(struct sockaddr_in));
+				socklen_t len = sizeof(clientaddr);
+				connfd = accept(sockfd,(struct sockaddr *)&clientaddr,&len);
+
 				if(connfd < 0 && (errno == EAGAIN || errno == EWOULDBLOCK))
 				{
 					printf("no more accept\n");
 					break;
-				}
+				}/*
+				 * get the client*/
+				char tmp_ip[20];
+				inet_ntop(AF_INET,&(clientaddr.sin_addr),tmp_ip);
+				printf("%s:%d\n",tmp_ip,htons(clientaddr.sin_port));
 				make_sock_non_block(connfd);
 				event.data.fd = connfd;
 				event.events = EPOLLIN|EPOLLET;
@@ -96,6 +104,7 @@ int main(int argc,char *argv[])
 				int connfd;
 				connfd = events[i].data.fd;
 				char buf[1024];
+				sleep(200);
 				while(1)
 				{
 					bzero(buf,1024);

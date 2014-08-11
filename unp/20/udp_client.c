@@ -27,7 +27,7 @@ int main(int argc, char *argv[])
 	setsockopt(sockfd,SOL_SOCKET,SO_REUSEADDR,&on,sizeof(on));
 	set_non_block(sockfd);
 	set_non_block(0);
-	add_to_mcast(sockfd,"225.0.1.1");
+	add_to_mcast(sockfd,"224.0.1.1");
 	int epfd;
 	epfd = epoll_create(10);
 	struct epoll_event events[10];
@@ -76,12 +76,22 @@ int main(int argc, char *argv[])
 				}
 			}
 			buf[102399] = 'a';
-			ssize_t n = sendto(sockfd,buf,102400,0,(struct sockaddr *)&servaddr,sizeof(struct sockaddr));
+			ssize_t n = sendto(sockfd,buf,1024,0,(struct sockaddr *)&servaddr,sizeof(struct sockaddr));
 			//ssize_t n = send(sockfd,buf,1024,0);
 			if(n < 0)
 			{
 			perror("sendto");
 			return -1;
+			}
+			socklen_t len = sizeof(struct sockaddr);
+			n = recvfrom(sockfd,buf,n,0,NULL,NULL);
+			if(n <= 0)
+			{
+				if(errno !=EAGAIN)
+				{
+					perror("recv");
+					return -1;
+				}
 			}
 		}
 		else
