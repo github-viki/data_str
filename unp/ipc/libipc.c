@@ -1,4 +1,16 @@
 #include "unipc.h"
+mqd_t open_mq(char *path)
+{
+	mqd_t fd;
+	mode_t fdmode = S_IRWXU|S_IRGRP|S_IWGRP|S_IROTH|S_IWOTH;
+	if((fd = mq_open(path,O_RDWR|O_NONBLOCK,fdmode,NULL)) == (mqd_t) -1)
+	{
+		perror("mq_open");
+		return -1;
+	}
+	return fd;
+
+}
 int get_mq_attr(mqd_t fd)
 {
 	struct mq_attr attr_info;
@@ -29,6 +41,11 @@ int recv_mq_msg(mqd_t fd)
 	char *buf = (char *)malloc(msg_size);
 	if(mq_receive(fd,buf,msg_size,NULL) < 0)
 	{
+		if(errno == EAGAIN)
+		{
+			printf("sleep10\n");
+			sleep(10);
+		}
 		perror("recv");
 		return -1;
 	}
