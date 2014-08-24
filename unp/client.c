@@ -1,6 +1,4 @@
 #include "unp.h"
-#define PORT 5000
-#define IP "192.168.56.3"
 void make_sock_non_block(int sockfd)
 {
 	int flags;
@@ -14,30 +12,20 @@ void make_sock_non_block(int sockfd)
 
 int main(int argc,char *argv[])
 {
-	if(argc < 2)
+	int port;
+	if(argc < 3)
 	{
-		printf("usage:ip\n");
+		printf("usage:ip port\n");
 		return -1;
 	}
+	port = atoi(argv[2]);
 	struct sockaddr_in ser_addr;
 	bzero(&ser_addr,sizeof(ser_addr));
 	ser_addr.sin_family = AF_INET;
-	ser_addr.sin_port = htons(PORT);
+	ser_addr.sin_port = htons(port);
 	inet_pton(AF_INET,argv[1],(void *)&(ser_addr.sin_addr));
 	int sockfd;
 	sockfd = socket(AF_INET,SOCK_STREAM,0);
-	int on = 1;
-	setsockopt(sockfd,SOL_SOCKET,SO_REUSEADDR,&on,sizeof(on));
-	if(connect(sockfd,(struct sockaddr *)&ser_addr,sizeof(ser_addr)) < 0)
-	{
-		perror("connect");
-		return -1;
-	}
-	ssize_t n;
-	char send_buf[1024];
-	bzero(send_buf,1024);
-	char recv_buf[1024];
-	bzero(recv_buf,1024);
 	/*
 	 * epoll model to 
 	 * monitor the all fd;
@@ -53,8 +41,22 @@ int main(int argc,char *argv[])
 	epoll_ctl(efd,EPOLL_CTL_ADD,0,&event);
 	bzero(&event,sizeof(event));
 	event.data.fd = sockfd;
-	event.events = EPOLLIN|EPOLLET;
+	event.events = EPOLLIN|EPOLLET|EPOLLOUT;
 	epoll_ctl(efd,EPOLL_CTL_ADD,sockfd,&event);
+
+	int on = 1;
+	setsockopt(sockfd,SOL_SOCKET,SO_REUSEADDR,&on,sizeof(on));
+	if(connect(sockfd,(struct sockaddr *)&ser_addr,sizeof(ser_addr)) < 0)
+	{
+		if(errno != EINPROGRESS)
+		{perror("connect");
+		return -1;}
+	}
+	ssize_t n;
+	char send_buf[1024];
+	bzero(send_buf,1024);
+	char recv_buf[1024];
+	bzero(recv_buf,1024);
 
 	while((n=epoll_wait(efd,events,10,-1)) > 0)
 	{
@@ -68,10 +70,10 @@ int main(int argc,char *argv[])
 			bzero(send_buf,1024);
 			if((n=read(0,send_buf,1024)) > 0)
 			{
-				int tmp_i = 0;
-				for(tmp_i;tmp_i < 6;tmp_i ++)
-				{
-				if(send(sockfd,send_buf,1024,0) < 0)
+			//	int tmp_i = 0;
+			//	for(tmp_i;tmp_i < 6;tmp_i ++)
+			//	{
+				if(send(sockfd,send_buf,n,0) < 0)
 				{
 					if(errno == EAGAIN)
 					{
@@ -88,13 +90,24 @@ int main(int argc,char *argv[])
 				else
 				{
 				}
-				}
 			}
+			
 			
 			else if(n == 0)
 			{
+				/*printf("read eof\n");
+				if(send(sockfd,"1",1,0) < 0)
+				{
+					perror("send");
+				}
+
 				shutdown(sockfd,SHUT_WR);
+				if(send(sockfd,"1",1,0) < 0)
+				{
+					perror("send");
+				}*/
 				break;
+				
 			}
 			else
 			{
@@ -113,7 +126,7 @@ int main(int argc,char *argv[])
 		{
 			while(1)
 			{
-				bzero(recv_buf,1024);
+			bzero(recv_buf,1024);
 			ssize_t n;
 
 			n = recv(sockfd,recv_buf,1024,0);
@@ -131,10 +144,15 @@ int main(int argc,char *argv[])
 			else
 				if(n == 0)
 				{
-					close(sockfd);
+					//close(sockfd);
+					shutdown(sockfd,SHUT_RD|SHUT_WR);
+					if(send(sockfd,"1",1,0) < 0)
+					{
+						perror("send");
+					}
 					return -1;
 				}
-			printf("%s",recv_buf);
+			printf("%s\n",recv_buf);
 			}
 		}
 		}

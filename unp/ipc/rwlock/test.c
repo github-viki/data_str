@@ -69,6 +69,7 @@ void *consumer(void *arg)
 	while(get.nready - get.hasread == 0)
 		
 	{
+		pthread_cond_wait(&(get.cond),&(get.mutex));
 		//这里应该加一个判断是否可以结束。
 		//因为当另外一个read线程读了所有的数据，此时写进程就不会再新加任何数据。
 		//所以 加一个判断
@@ -77,7 +78,7 @@ void *consumer(void *arg)
 			pthread_mutex_unlock(&get.mutex);
 			return NULL;
 		}
-		pthread_cond_wait(&(get.cond),&(get.mutex));
+
 	}
 	get.hasread++;
 	pthread_mutex_unlock(&get.mutex);

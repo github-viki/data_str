@@ -104,7 +104,6 @@ int main(int argc,char *argv[])
 				int connfd;
 				connfd = events[i].data.fd;
 				char buf[1024];
-				sleep(200);
 				while(1)
 				{
 					bzero(buf,1024);
@@ -134,6 +133,7 @@ int main(int argc,char *argv[])
 					else
 					{
 						send(connfd,buf,n,0);
+						shutdown(connfd,SHUT_WR);
 					}
 				}
 			}
