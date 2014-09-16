@@ -19,10 +19,10 @@ void heap_adjust(int *p,int source,int last)
 	int j=0;
 	for(j=2*i;j<=last;j*=2)
 	{
-		if((p[j]< p[j+1]) && (j < last)) j++;
+		if(j < last && (p[j]< p[j+1]) ) j++;
 		if(tmp < p[j])
 		{	
-			p[j/2]=p[j];
+			p[j/2]=p[j];  
 			p[j]=tmp;
 		}
 	}

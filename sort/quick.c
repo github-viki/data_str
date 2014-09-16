@@ -16,8 +16,8 @@ int partion(int *p,int low,int high)
 		}
 		p[high] = p[low];
 		//the last
-		p[low] = p[0];
 	}
+	p[low] = p[0];
 		return low;
 }
 int quicksort(int *p,int low,int high)
