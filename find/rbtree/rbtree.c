@@ -106,7 +106,7 @@ void adjust_rb_tree(rbnode *h,rbnode *x)
 				grandfather = parent->parent;
 			}
 			//CASE2:叔父节点为黑色son为右孩子
-			//CASE3：叔父节点为红色son为左孩子
+			//CASE3:叔父节点为黑色son为左孩子
 			else
 			{
 				if(son == parent->right)
@@ -149,7 +149,7 @@ void adjust_rb_tree(rbnode *h,rbnode *x)
 				grandfather = parent->parent;
 			}
 			//CASE2:叔父节点为黑色son为右孩子
-			//CASE3：叔父节点为红色son为左孩子
+			//CASE3：叔父节点为黑色son为左孩子
 			else
 			{
 				if(son == parent->left)

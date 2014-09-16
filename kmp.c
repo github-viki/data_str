@@ -8,7 +8,7 @@ int *nextval(int n_len,char *n)
 	next[1]=0;
 	int i,j;
 	i=1;j=0;
-	while(i<=n_len)
+	while(i <= n_len)
 	{
 		if(j == 0|| n[i] == n[j])
 		{
